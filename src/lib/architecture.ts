@@ -121,6 +121,29 @@ export function leaderLength(member: Member): number {
 }
 
 /**
+ * THE single definition of an element's drawn extent, 1-based inclusive into the
+ * leader: the `tbox` feature window (the T-box riboswitch core — Stem I → the
+ * antiterminator/discriminator), falling back to the full leader `[1, leaderLen]`
+ * when `tbox` is absent or runs off the leader's 3′ end (same out-of-range guard as
+ * `featureSpans`). The `tbox` annotation stops short of the leader's 3′ end (the
+ * terminator-hairpin tail lies OUTSIDE it — e.g. T0018.m1 `tbox = [1, 238]` over a
+ * 288 bp leader), so the body is ~50 bp narrower than the full leader.
+ *
+ * Both the architecture diagram (this body projected to the bio axis) AND the
+ * full-locus sequence track (this body shifted by the element's interval offset) read
+ * the SAME window, so the two views draw the element at the same extent and agree on
+ * the inter-element spacers / overlaps — and the shared-leader loci (both members in
+ * one leader window) separate into their two distinct cores instead of stacking as
+ * two identical full-leader bands.
+ */
+export function bodyWindow(member: Member): [number, number] {
+  const leaderLen = leaderLength(member)
+  const tbox = validSpan(member.coords.window.tbox)
+  if (tbox && tbox[1] <= leaderLen) return tbox
+  return [1, leaderLen]
+}
+
+/**
  * Project a locus's members onto one to-scale, biological-5′→3′ track (PLAN §9①).
  * `members` need not be pre-sorted; the result is ordinal-ordered.
  *
@@ -166,9 +189,12 @@ export function buildArchitecture(
       return { name, start: toBio(v[0]), end: toBio(v[1]) }
     }
 
-    const tbox = featBox('tbox')
-    const bodyStart = tbox ? tbox.start : bioLeaderStart
-    const bodyEnd = tbox ? tbox.end : bioLeaderStart + leaderLength(member) - 1
+    // The element body is the shared `bodyWindow` (tbox core, or full-leader fallback)
+    // projected to the bio axis — the SAME window the full-locus sequence track uses, so
+    // the diagram and the track agree on the body extent and the spacers/overlaps.
+    const [bodyLo, bodyHi] = bodyWindow(member)
+    const bodyStart = toBio(bodyLo)
+    const bodyEnd = toBio(bodyHi)
 
     const features: Partial<Record<FeatureName, FeatureBox>> = {}
     for (const name of ELEMENT_FEATURES) {

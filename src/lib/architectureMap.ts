@@ -10,6 +10,7 @@
 //     inclusive leader window `[lo, hi]` therefore maps to `{ start: lo-1, end: hi }`.
 
 import type { ArchitectureModel } from './architecture'
+import { bodyWindow } from './architecture'
 import type { FuncClass, LocusContext, Member } from './data/types'
 import type { Part, SequenceData, Translation } from './vendor/hatchlings'
 import { LINEAR_MARGIN_LEFT, LINEAR_MARGIN_RIGHT } from './vendor/hatchlings/util/layout'
@@ -161,10 +162,17 @@ export function toSequenceData(member: Member): SequenceData {
 /**
  * The WHOLE locus as one continuous SequenceViewer track (PLAN §9 — "all elements together"):
  * the NCBI interval sequence (transcription-5′→3′), annotated with, per element, a specifier-tinted
- * body part + its feature arrows + codon translation (re-projected by the element's interval
- * offset), plus a chrome arrow per downstream gene. Because the interval seq round-trips each
- * member's `fasta_sequence` at its stored offset, the per-element features land exactly. Elements
- * absent from the context (defensive) are skipped.
+ * body part + its codon translation (re-projected by the element's interval offset), plus a chrome
+ * arrow per downstream gene. Because the interval seq round-trips each member's `fasta_sequence` at
+ * its stored offset, the per-element features land exactly. Elements absent from the context
+ * (defensive) are skipped.
+ *
+ * The body part spans the shared `bodyWindow` (the `tbox` core — the SAME extent the architecture
+ * diagram draws), NOT the full leader, so the track and the diagram agree on where each element
+ * sits and on the inter-element spacers / overlaps. (Drawing the full leader instead made the two
+ * views disagree: the leader is ~50 bp wider than the tbox core, which flipped clean gaps in the
+ * diagram into apparent overlaps on the track and stacked the 44 shared-leader loci's two members
+ * as identical full-length bands.)
  */
 export function toLocusSequenceData(
   members: Member[],
@@ -182,14 +190,17 @@ export function toLocusSequenceData(
     if (base === undefined) continue
     // the element body (specifier-tinted) — the one place the data hue appears on the track. Labelled
     // exactly like the member-sequence / element-comparison views ("5′ (1) LYS" … "3′ (n) …") since the
-    // locus track shows every element of the locus at once (up to six).
+    // locus track shows every element of the locus at once (up to six). The body spans the tbox core
+    // (`bodyWindow`, the diagram's extent), shifted by `base` into the interval: a 1-based inclusive
+    // window [lo, hi] → 0-based half-open [base+lo-1, base+hi).
     const aaLabel = member.specifier.aa ?? '?'
+    const [bodyLo, bodyHi] = bodyWindow(member)
     parts.push({
       id: member.member_id,
       name: `${ordinalLabel(member.ordinal, n)} ${aaLabel}`,
       type: 'tbox',
-      start: base,
-      end: base + member.fasta_sequence.length,
+      start: base + bodyLo - 1,
+      end: base + bodyHi,
       strand: 1,
       color: aaColor(member.specifier.aa),
       label: `${ordinalLabel(member.ordinal, n)} ${aaLabel}`,
