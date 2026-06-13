@@ -1,6 +1,6 @@
 {
   "name": "tbdb-tandem",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "tbdb.tandem — a static explorer for the 470 tandem T-box riboswitch loci (companion to tbdb.io).",
