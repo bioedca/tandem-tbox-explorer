@@ -4,7 +4,7 @@
 // covered by the existing architectureMap tests; here we pin the to-scale + continuous-track
 // behaviour and a real round-trip against the committed public/data/locus_context artifact.
 import { describe, expect, test } from 'vitest'
-import { buildArchitecture } from '../../src/lib/architecture'
+import { buildArchitecture, bodyWindow } from '../../src/lib/architecture'
 import { toLinearMapProps, toSequenceData, toLocusSequenceData, DOWNSTREAM_ORF_ID } from '../../src/lib/architectureMap'
 import { aaColor, FUNC_CLASS_SHADE } from '../../src/lib/color'
 import type { FeatureName, LocusContext, Member, Span } from '../../src/lib/data/types'
@@ -160,23 +160,68 @@ describe('toLocusSequenceData — continuous locus track', () => {
     expect(locus.translations).toEqual(single.translations)
   })
 
-  test('real round-trip (+ strand, T0001): each element fasta lands at its offset in the interval seq', () => {
+  test('real round-trip (+ strand, T0001): each element body is its tbox core at the stored offset', () => {
     const c = ctxT0001 as unknown as LocusContext
     const data = toLocusSequenceData(membersOf('T0001'), c, 'biosynthesis')
     expect(data.seq).toBe(c.seq)
+    const offsetById = new Map(c.elements.map((e) => [e.member_id, e]))
     for (const mem of membersOf('T0001')) {
+      // the interval seq still round-trips the FULL leader at the stored offset (the data contract)…
+      const e = offsetById.get(mem.member_id)!
+      expect(c.seq.slice(e.offset, e.offset + e.length)).toBe(mem.fasta_sequence)
+      // …but the drawn body spans the tbox CORE (`bodyWindow`), shifted into the interval — exactly the
+      // leader sliced to that window, NOT the whole leader.
+      const [lo, hi] = bodyWindow(mem)
       const body = data.parts.find((p) => p.id === mem.member_id)!
-      expect(data.seq.slice(body.start, body.end)).toBe(mem.fasta_sequence)
+      expect(body.start).toBe(e.offset + lo - 1)
+      expect(body.end).toBe(e.offset + hi)
+      expect(data.seq.slice(body.start, body.end)).toBe(mem.fasta_sequence.slice(lo - 1, hi))
     }
   })
 
-  test('real round-trip (− strand, shared-leader T0342): both elements land + trpE gene is chrome', () => {
+  test('shared-leader T0342: the two members separate into distinct tbox cores (no stacked full-leader bands)', () => {
     const c = ctxT0342 as unknown as LocusContext
-    const data = toLocusSequenceData(membersOf('T0342'), c, 'biosynthesis')
-    for (const mem of membersOf('T0342')) {
-      const body = data.parts.find((p) => p.id === mem.member_id)!
-      expect(data.seq.slice(body.start, body.end)).toBe(mem.fasta_sequence)
-    }
+    const mems = membersOf('T0342').sort((a, b) => a.ordinal - b.ordinal)
+    const data = toLocusSequenceData(mems, c, 'biosynthesis')
+    const bodies = mems.map((mem) => data.parts.find((p) => p.id === mem.member_id)!)
+    // Both members share one leader (same offset), so the OLD full-leader bands were identical. With
+    // the tbox-core body they no longer fully overlap — the 5′ element's body ends before the 3′
+    // element's begins (a real spacer), matching the architecture diagram.
+    expect(bodies[0].start).not.toBe(bodies[1].start)
+    expect(bodies[0].end).toBeLessThanOrEqual(bodies[1].start)
     expect(data.parts.some((p) => p.type === 'gene')).toBe(true)
+  })
+
+  test('the track body matches the architecture diagram body for every element (the views agree)', () => {
+    // The crux of the fix: the seq-view body and the diagram body are the SAME extent. The diagram lays
+    // bodies on a bio axis anchored at the 5′-most leader coord; the track shifts by the interval offset.
+    // For loci whose genome coords match the assembly those two anchors coincide, so the bodies land at
+    // identical bp (T0001/T0342 both round-trip byte-exactly — see complete-locus-view notes).
+    for (const tid of ['T0001', 'T0342']) {
+      const c = (tid === 'T0001' ? ctxT0001 : ctxT0342) as unknown as LocusContext
+      const mems = membersOf(tid)
+      const model = buildArchitecture(mems, c.strand, c)
+      const data = toLocusSequenceData(mems, c, 'biosynthesis')
+      for (const el of model.elements) {
+        const body = data.parts.find((p) => p.id === el.member.member_id)!
+        // diagram body [bodyStart, bodyEnd] (bp, inclusive) == track body [start, end) (half-open).
+        expect(body.start).toBe(el.bodyStart)
+        expect(body.end - 1).toBe(el.bodyEnd)
+      }
+    }
+  })
+})
+
+describe('bodyWindow — the shared element-extent definition', () => {
+  test('returns the tbox window when present and in range', () => {
+    const mem = m({ id: 'B.m1', ordinal: 1, aa: 'TRP', leader: [1, 288], window: { tbox: [1, 238], term: [220, 260] } })
+    expect(bodyWindow(mem)).toEqual([1, 238]) // tbox core, ~50 bp short of the 288 bp leader
+  })
+
+  test('falls back to the full leader when tbox is absent or runs off the 3′ end', () => {
+    const noTbox = m({ id: 'B.m1', ordinal: 1, aa: 'TRP', leader: [1, 100], window: {} })
+    expect(bodyWindow(noTbox)).toEqual([1, 100])
+    const outOfRange = m({ id: 'B.m2', ordinal: 1, aa: 'TRP', leader: [1, 100], window: { tbox: [10, 150] } })
+    expect(bodyWindow(outOfRange)).toEqual([1, 100])
   })
 })

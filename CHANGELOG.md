@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **The full-locus sequence track and the Tandem architecture diagram now agree on where each element sits.** The two views were drawing an element with two different extents: the diagram used the `tbox` feature window (the T-box riboswitch core — Stem I through the antiterminator/discriminator), while the sequence track used the whole leader (`fasta_sequence`). The leader runs ~50 bp past the `tbox` core (the terminator-hairpin tail lies outside the `tbox` annotation), so the track's element bands were systematically wider than the diagram's — the inter-element spacer never matched between the two views (all 479 adjacent pairs differed), and where adjacent leaders overlapped the track showed an apparent overlap while the diagram drew a clean gap (147 pairs). For the 44 shared-leader loci it was the inverse extreme: the track stacked the two members as two identical full-length bands, while the diagram correctly separated their two cores. Both views now read a single shared `bodyWindow(member)` definition (the `tbox` core, falling back to the full leader when `tbox` is absent/out-of-range), so the element bands, spacers and overlaps are identical between the diagram and the track. The architecture diagram's own geometry is unchanged (byte-identical); only the sequence-track element band moved onto the shared definition. Verified on T0342 (shared-leader: the two members now separate with the same ~19 bp gap the diagram shows) and T0018 (separate-leader-overlap: the track now shows the same 42 bp gap, no apparent overlap).
+
 ## [1.0.0] - 2026-06-13
 
 ### Added
