@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Docs
+- **Rewrote the top-level `README.md` for the v1.0.1 release.** It described the project as "in active development" with a "(planned)" layout, and asserted the data was "CC-BY" (TBDB grants no blanket data-reuse license — the About page already corrects this). The new README tours the five shipped views, the dataset counts (470 loci · 949 members · 488 pairs · 847+102 similarity-map tips), the tech stack, the repository layout, local-dev/test commands, the reproduction path, and deployment — keeping the no-polarity framing and the three foundational citations, and pointing to `data-pipeline/README.md` and `docs/similarity-cloud.md` for build detail.
+
 ## [1.0.1] - 2026-06-13
 
 ### Fixed
