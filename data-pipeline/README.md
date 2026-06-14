@@ -3,7 +3,7 @@
 The offline build that turns the two read-only TBDB source files into the static
 JSON the tbdb.tandem SPA loads, plus the `tree_input.fasta` the cluster tree build
 consumes. This is the **single source of truth** for member resolution and field
-provenance (PLAN §4, §5).
+provenance.
 
 ```
 SOURCE (read-only, outside the repo)            COMMITTED ARTIFACTS          APP
@@ -16,7 +16,7 @@ SOURCE (read-only, outside the repo)            COMMITTED ARTIFACTS          APP
 ```
 
 The 92 MB `Master_tboxes.csv` is **never** copied into the repo — it is read in
-place from `../tboxdb-master/` (PLAN §3, §11.1). Only the small derived artifacts
+place from `../tboxdb-master/`. Only the small derived artifacts
 under `public/data/` are committed.
 
 ## Requirements
@@ -39,7 +39,7 @@ pip install -r data-pipeline/requirements.txt
 
 ## Run the data build
 
-`build_json.py` (lands across S0.3–S0.6) reads the two sources and writes
+`build_json.py` reads the two sources and writes
 `summary.json`, `loci.json`, `members.json`, `identity.json`, `members.csv`
 (the member-level base table — every per-member field plus the component-stem
 colour spans flattened into columns), and `tree_input.fasta` to `public/data/`:
@@ -51,7 +51,7 @@ python3 data-pipeline/build_json.py \
   --out public/data
 ```
 
-The build aborts non-zero on any validation gate failure (PLAN §5.4) and prints
+The build aborts non-zero on any validation gate failure and prints
 the main-tree tip count emitted for the length-gated `tree_input.fasta`.
 
 `members.csv` also carries the NCBI-derived **genomic-context** columns
@@ -65,23 +65,23 @@ a normal `--out public/data` build fills the columns in one go.
 
 ## Run the cluster tree build
 
-The similarity tree is built on the lab cluster as a parallel track (PLAN §6,
-§6.1). One-time login-node setup (user miniconda env `phylo`):
+The similarity tree is built on the lab cluster as a parallel track. One-time
+login-node setup (user miniconda env `phylo`):
 
 ```bash
 # install Infernal + FastTree + MAFFT + gotree, then fetch the RF00230 CM
 cmfetch Rfam.cm RF00230 > tbox_RF00230.cm     # redirect is mandatory; name must match the sbatch
 ```
 
-Then submit the batch job (gated on a resource probe + one-shot go-ahead —
-see CLAUDE.md §5), which aligns the full leader to RF00230, slices the Stem-I
-consensus columns, and infers the tree with FastTree:
+Then submit the batch job, which aligns the full leader to RF00230, slices the
+Stem-I consensus columns, and infers the tree with FastTree:
 
 ```bash
 ssh two sbatch data-pipeline/build_tree.sbatch   # poll with squeue / sacct
 ```
 
-`build_tree.sbatch` and the post-processing script land in Track B (SB.1+).
+`build_tree.sbatch` and its post-processing scripts (`slice_stemI_columns.py`,
+`build_tree_artifacts.py`) live in this directory.
 
 ## Build the 3D similarity cloud (`/cloud`)
 
@@ -173,11 +173,11 @@ reproduce without re-running the gated R2DT pipeline):
 
 ```bash
 # 4. graft a real ANTITERMINATOR hairpin into each R2DT diagram + reflow the backbone
-python3 data-pipeline/build_r2dt.py graft       # -> public/data/r2dt/ (792 of 949)
+python3 data-pipeline/build_r2dt.py graft       # -> public/data/r2dt/ (790 of 949)
 
 # 5. graft the TERMINATOR hairpin onto the SAME Stem I/II/III coords -> the gene-OFF
 #    conformation, full-length (Stem I/II/III pinned, only the 3' hairpin swaps)
-python3 data-pipeline/build_r2dt.py terminator  # -> public/data/r2dt/term/ (789 of 949)
+python3 data-pipeline/build_r2dt.py terminator  # -> public/data/r2dt/term/ (784 of 949)
 ```
 
 The RF00230 template does not base-pair either regulatory hairpin, so `graft` folds
@@ -196,14 +196,14 @@ dependency (the NAView branch).
 
 ## Run the tests
 
-The pipeline test suite (PLAN §10.1) runs from this directory:
+The pipeline test suite runs from this directory:
 
 ```bash
 cd data-pipeline && pytest            # or, from the repo root:  pytest data-pipeline
 ```
 
 - `tests/test_wuss.py` — WUSS→dot-bracket converter golden + balance tests.
-- `tests/test_build.py` — build gates 1–10 + golden values on a fixture subset (S0.7).
-- `tests/test_artifacts.py` — integrity checks over the committed `public/data/*.json` + `members.csv` (S0.7).
+- `tests/test_build.py` — build gates 1–10 + golden values on a fixture subset.
+- `tests/test_artifacts.py` — integrity checks over the committed `public/data/*.json` + `members.csv`.
 - `tests/test_build_r2dt.py` — R2DT compact extraction + ingest (sequence-match guard, manifest).
 - `tests/test_build_cloud.py` — PCoA embedding on a fixture tree (patristic ordering, deterministic sign convention, k-NN dedup) + committed `cloud.json` integrity.
