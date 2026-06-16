@@ -11,4 +11,4 @@ numpy>=2.4.6            # PCoA eigendecomposition for build_cloud.py (the /cloud
 
 # Test runner. CI's `data` job runs `pytest` after installing this file
 # (PLAN §10.1, §11.3), so it is pinned here for a deterministic suite.
-pytest==9.0.3
+pytest==9.1.0
