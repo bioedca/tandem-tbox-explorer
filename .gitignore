@@ -17,6 +17,7 @@ data-pipeline/.pytest_cache/
 playwright-report/
 test-results/
 coverage/
+.svelte-check/
 *.tsbuildinfo
 
 # session scratch (Claude Code state + Playwright-MCP snapshots) — never committed

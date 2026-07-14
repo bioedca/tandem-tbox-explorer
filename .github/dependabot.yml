@@ -12,6 +12,13 @@ updates:
     groups:
       npm-dependencies:
         patterns: ['*']
+    # svelte-check 4.7 still boots through TypeScript's legacy JavaScript API.
+    # Keep that compatibility shim on TS6; stable TS7 is installed separately
+    # as @typescript/native-preview and runs every application diagnostic.
+    ignore:
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
 
   # Python data-pipeline dependencies (data-pipeline/requirements.txt).
   - package-ecosystem: pip

@@ -56,14 +56,15 @@ jobs:
       - name: Install (reproducible)
         run: npm ci
 
-      # svelte-check is the load-bearing typecheck: bare `tsc --noEmit` does NOT
-      # type-check Svelte component props (empirically proven across S1.1/S1.4/
-      # S1.5/S1.6 — a bad prop slips past tsc but svelte-check catches it). Run
-      # both so component-prop regressions can't pass CI.
-      - name: Type-check components (svelte-check)
+      # svelte-check is the load-bearing component check: bare `tsc --noEmit`
+      # does not type-check Svelte component props. Its TS7 backend is guarded
+      # by an intentionally-invalid prop fixture before the real app is checked.
+      - name: Type-check components (svelte-check + TypeScript 7)
         run: npm run check
 
-      - name: Type-check TypeScript (tsc --noEmit)
+      # This invokes the stable native TypeScript 7 binary explicitly; bare
+      # `tsc` resolves to the TS6 bootstrap shim required by svelte-check 4.7.
+      - name: Type-check TypeScript (native TypeScript 7)
         run: npm run typecheck
 
       - name: Unit + component tests (vitest)

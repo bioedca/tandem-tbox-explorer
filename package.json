@@ -12,8 +12,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json",
-    "typecheck": "tsc --noEmit",
+    "check:toolchain": "node ./scripts/verify-typescript7.mjs",
+    "check": "npm run check:toolchain && svelte-check --tsgo-experimental-api --tsconfig ./tsconfig.json",
+    "typecheck": "node ./node_modules/@typescript/native-preview/bin/tsc --noEmit --project ./tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -36,13 +37,14 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/svelte": "^5.4.2",
     "@tsconfig/svelte": "^5.0.0",
+    "@typescript/native-preview": "npm:typescript@7.0.2",
     "@types/tabulator-tables": "^6.3.6",
     "@types/three": "0.185.1",
     "jsdom": "^29.1.1",
     "svelte": "^5.56.4",
-    "svelte-check": "^4.7.2",
+    "svelte-check": "4.7.2",
     "tailwindcss": "^4.0.0",
-    "typescript": "^7.0.2",
+    "typescript": "6.0.3",
     "vite": "^8.1.4",
     "vitest": "^4.1.10"
   }
