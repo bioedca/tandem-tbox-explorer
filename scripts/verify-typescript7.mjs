@@ -31,8 +31,13 @@ if (native.version !== expectedNative || !native.version.startsWith('7.')) {
   fail(`native diagnostics must be TypeScript ${expectedNative}; installed ${native.version}`);
 }
 
+const nativeExports = native.exports;
+if (!nativeExports || typeof nativeExports !== 'object' || Array.isArray(nativeExports)) {
+  fail('native TypeScript package does not expose a valid exports map');
+}
+
 for (const requiredExport of ['./unstable/sync', './unstable/ast']) {
-  if (!(requiredExport in native.exports)) {
+  if (!Object.hasOwn(nativeExports, requiredExport)) {
     fail(`native TypeScript package is missing ${requiredExport}`);
   }
 }
