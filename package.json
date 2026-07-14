@@ -18,32 +18,32 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@chenglou/pretext": "0.0.7",
+    "@chenglou/pretext": "0.0.8",
     "@molbiohive/hatchlings": "0.8.4",
     "d3": "^7.9.0",
     "fornac": "^1.1.0",
     "phylotree": "^2.0.0",
-    "plotly.js-dist-min": "^3.0.0",
-    "svelte-spa-router": "^5.0.0",
-    "tabulator-tables": "^6.0.0",
-    "three": "0.184.0"
+    "plotly.js-dist-min": "^3.7.0",
+    "svelte-spa-router": "^5.1.1",
+    "tabulator-tables": "^6.5.2",
+    "three": "0.185.1"
   },
   "devDependencies": {
-    "@playwright/test": "1.60.0",
-    "@sveltejs/vite-plugin-svelte": "^7.1.2",
-    "@tailwindcss/vite": "^4.0.0",
+    "@playwright/test": "1.61.1",
+    "@sveltejs/vite-plugin-svelte": "^7.2.0",
+    "@tailwindcss/vite": "^4.3.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/svelte": "^5.3.1",
+    "@testing-library/svelte": "^5.4.2",
     "@tsconfig/svelte": "^5.0.0",
-    "@types/tabulator-tables": "^6.3.4",
-    "@types/three": "0.184.1",
+    "@types/tabulator-tables": "^6.3.6",
+    "@types/three": "0.185.1",
     "jsdom": "^29.1.1",
-    "svelte": "^5.56.3",
-    "svelte-check": "^4.6.0",
+    "svelte": "^5.56.4",
+    "svelte-check": "^4.7.2",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.16",
-    "vitest": "^4.1.8"
+    "typescript": "^7.0.2",
+    "vite": "^8.1.4",
+    "vitest": "^4.1.10"
   }
 }
