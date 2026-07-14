@@ -105,12 +105,18 @@ npm run preview    # serve the production build
 Checks and tests:
 
 ```bash
-npm run check      # svelte-check
-npm run typecheck  # tsc --noEmit
+npm run check      # Svelte diagnostics through the native TypeScript 7 API
+npm run typecheck  # stable native TypeScript 7 CLI (`tsc --noEmit`)
 npm run test       # vitest (unit + component)
 npx playwright test          # e2e + visual, against the production build
 pytest data-pipeline         # data-pipeline suite (see data-pipeline/README.md for the env)
 ```
+
+`svelte-check` 4.7 still needs the TypeScript 6 JavaScript API while it starts,
+so `typescript@6` remains as a pinned compatibility shim. The application is
+checked with stable TypeScript 7: `svelte-check` uses its TS-Go API and the
+standalone typecheck invokes the native TypeScript 7 binary directly. A fixture
+guard fails CI if cross-component Svelte prop diagnostics stop working.
 
 Rebuilding the data is optional — the JSON artifacts are committed.
 See **[`data-pipeline/README.md`](data-pipeline/README.md)** for the Python env and every
