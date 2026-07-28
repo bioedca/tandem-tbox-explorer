@@ -1,6 +1,6 @@
 # Data-build pipeline dependencies (PLAN §5.5, §11.5).
 # Exact pins for reproducible local + CI installs. Python 3.12+.
-pandas==3.0.3          # tabular load/transform of the two TBDB sources
+pandas==3.0.5          # tabular load/transform of the two TBDB sources
 biopython==1.87        # pairwise %-identity for identity.json (PLAN §5.2)
 ViennaRNA==2.7.2       # NAView hairpin layout for build_r2dt.py `graft` (build-time only)
 numpy>=2.5.1            # PCoA eigendecomposition for build_cloud.py (the /cloud embedding) AND
