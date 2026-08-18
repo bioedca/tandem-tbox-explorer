@@ -9,6 +9,6 @@
 #
 # These mirror data-pipeline/requirements.txt (the pipeline's own pins); kept
 # here too so the reproducibility guarantee is self-documenting next to the suite.
-pandas==3.0.3
-biopython==1.87
+pandas==3.0.5
+biopython==1.88
 pytest==9.1.1
